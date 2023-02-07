@@ -3,7 +3,7 @@
 
 import torch
 import torch.nn as nn
-from utils.convlstmcell import ConvLSTMCell, ConvTTLSTMCell
+from utils.convlstmcell import ConvLSTMCell, ConvTTLSTMCell    
 
 ## Convolutional-LSTM network
 class ConvLSTMNet(nn.Module):

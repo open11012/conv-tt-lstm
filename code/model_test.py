@@ -187,7 +187,7 @@ if __name__ == "__main__":
     ## Models (Conv-LSTM or Conv-TT-LSTM)
 
     # model name (with time stamp as suffix)
-    parser.add_argument('--checkpoint', default = "checkpoint.pt", type = str,
+    parser.add_argument('--checkpoint', default = "checkpoint.pth", type = str,
         help = 'The name for the checkpoint.')
 
     # model type and size (depth and width) 

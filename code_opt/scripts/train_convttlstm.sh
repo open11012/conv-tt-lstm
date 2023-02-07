@@ -7,4 +7,4 @@ cd "$(dirname "$0")"
 cd ..
 
 # Pytorch standard implementation
-python3 -m torch.distributed.launch --nproc_per_node=1 model_train.py --dataset KTH --use-sigmoid --img-channels 3 --img-height 120 --img-width 120 --kernel-size 5 --model convlstm --batch-size 1 --learning-rate 1e-3 --valid-samples 448 --num-epochs 500 --ssr-decay-ratio 4e-3 # --use-amp --use-checkpointing
+python3 model_train.py --dataset MNIST --use-sigmoid --img-channels 1 --img-height 64 --img-width 64 --kernel-size 5 --model convlstm --batch-size 1 --learning-rate 1e-3 --valid-samples 448 --num-epochs 500 --ssr-decay-ratio 4e-3 # --use-amp --use-checkpointing

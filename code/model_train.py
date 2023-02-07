@@ -246,7 +246,7 @@ if __name__ == "__main__":
         help = "The kernel size of the convolutional operations.")
 
     ## Dataset (Input to the training algorithm)
-    parser.add_argument('--dataset', default = "MNIST", type = str, 
+    parser.add_argument('--dataset', default = "KTH", type = str, 
         help = 'The dataset name. (Options: MNIST, KTH)')
 
     # training set

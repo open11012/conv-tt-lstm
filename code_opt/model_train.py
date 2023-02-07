@@ -1,6 +1,6 @@
 # Copyright (c) 2020 NVIDIA Corporation. All rights reserved.
 # This work is licensed under a NVIDIA Open Source Non-commercial license
-
+# %%
 # system modules
 import os, argparse
 
@@ -26,7 +26,7 @@ from utils.gpu_affinity import set_affinity
 from apex import amp
 
 torch.backends.cudnn.benchmark = True
-
+# %%
 def main(args):
     ## Distributed computing
 
@@ -68,12 +68,12 @@ def main(args):
             "ranks": args.model_ranks},
         # convolutional parameters
         kernel_size = args.kernel_size).cuda()
-
+# %%
     ## Dataset Preparation (KTH, MNIST)
     Dataset = {"KTH": KTH_Dataset, "MNIST": MNIST_Dataset}[args.dataset]
 
-    DATA_DIR = os.path.join("../data", 
-        {"MNIST": "mnist", "KTH": "kth"}[args.dataset])
+    DATA_DIR = os.path.join("/ai/open11012/zhou/datasets/", 
+        {"MNIST": "mnist", "KTH": "kth"}[args.dataset],'train')
 
     # batch size for each process
     total_batch_size  = args.batch_size
@@ -161,7 +161,7 @@ def main(args):
         samples = 0
         for frames in train_loader:
             samples += total_batch_size
-
+            frames = frames[..., np.newaxis]
             frames = frames.permute(0, 1, 4, 2, 3).cuda()
             inputs = frames[:, :-1]
             origin = frames[:, -args.output_frames:]
@@ -208,7 +208,7 @@ def main(args):
             samples, LOSS = 0., 0.
             for it, frames in enumerate(valid_loader):
                 samples += total_batch_size
-
+                frames = frames[..., np.newaxis]
                 frames = frames.permute(0, 1, 4, 2, 3).cuda()
                 inputs = frames[:,  :args.input_frames]
                 origin = frames[:, -args.output_frames:]
@@ -256,7 +256,7 @@ def main(args):
                 param_group['lr'] *= args.lr_decay_rate
 
     if args.local_rank == 0:
-        torch.save(model.state_dict(), "checkpoint.pt")
+        torch.save(model.state_dict(), "checkpoint.pth")
 
 
 if __name__ == "__main__":
@@ -269,7 +269,7 @@ if __name__ == "__main__":
         action = 'store_true',  help = 'Use distributed computing in training.')
     parser.add_argument('--no-distributed',  dest = "distributed", 
         action = 'store_false', help = 'Use single process (GPU) in training.')
-    parser.set_defaults(distributed = True)
+    parser.set_defaults(distributed = False)
 
     parser.add_argument('--use-apex', dest = 'use_apex', 
         action = 'store_true',  help = 'Use apex.parallel for distributed computing.')
@@ -316,7 +316,7 @@ if __name__ == "__main__":
         help = 'The image height of each video frame.')
     parser.add_argument('--img-width',   default = 120, type = int, 
         help = 'The image width of each video frame.')
-    parser.add_argument('--img-channels', default =  3, type = int, 
+    parser.add_argument('--img-channels', default = 1, type = int, 
         help = 'The number of channels in each video frame.')
 
     ## Models (Conv-LSTM or Conv-TT-LSTM)
@@ -344,23 +344,23 @@ if __name__ == "__main__":
         help = "The kernel size of the convolutional operations.")
 
     ## Dataset (Input to the training algorithm)
-    parser.add_argument('--dataset', default = "KTH", type = str, 
+    parser.add_argument('--dataset', default = "MNIST", type = str, 
         help = 'The dataset name. (Options: KTH, MNIST)')
 
     # training dataset
-    parser.add_argument('--train-data-file', default = 'train', type = str,
+    parser.add_argument('--train-data-file', default = 'mnist_test_seq.npy', type = str,
         help = 'Name of the folder/file for training set.')
     parser.add_argument('--train-samples', default = 10000, type = int,
         help = 'Number of samples in each training epoch.')
 
     # validation dataset
-    parser.add_argument('--valid-data-file', default = 'valid', type = str, 
+    parser.add_argument('--valid-data-file', default = 'mnist_test_seq.npy', type = str, 
         help = 'Name of the folder/file for validation set.')
     parser.add_argument('--valid-samples', default = 3000, type = int, 
         help = 'Number of unique samples in validation set.')
 
     ## Learning algorithm
-    parser.add_argument('--num-epochs', default = 500, type = int, 
+    parser.add_argument('--num-epochs', default = 1000, type = int, 
         help = 'Number of total epochs in training.')
     parser.add_argument('--decay-log-epochs', default = 20, type = int, 
         help = 'The window size to determine automatic scheduling.')

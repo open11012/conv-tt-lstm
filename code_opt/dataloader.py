@@ -16,7 +16,7 @@ class MNIST_Dataset(Dataset):
     def __init__(self, params):
         # parameters of the dataset 
         path = params['path']
-        assert os.path.exists(path), "The file does not exist."
+        # assert os.path.exists(path), "The file does not exist."
 
         self.num_frames  = params['num_frames']
         self.num_samples = params.get('num_samples', None)
@@ -27,7 +27,7 @@ class MNIST_Dataset(Dataset):
         self.img_width    = params.get('width',   64)
         self.img_channels = params.get('channels', 1)
 
-        self.data = np.load(path)["data"]
+        self.data = np.load(path)
         self.data_samples = self.data.shape[0]
         self.data_frames  = self.data.shape[1]
 

@@ -1,6 +1,6 @@
 # Copyright (c) 2020 NVIDIA Corporation. All rights reserved.
 # This work is licensed under a NVIDIA Open Source Non-commercial license
-
+# %%
 import math
 import numpy as np
 import torch
@@ -24,7 +24,7 @@ def chkpt_blk(cc_i, cc_f, cc_o, cc_g, cell_states):
     outputs = o * torch.tanh(cell_states)
 
     return outputs, cell_states
-
+# %%
 ## Standard Convolutional-LSTM Module
 class ConvLSTMCell(nn.Module):
 

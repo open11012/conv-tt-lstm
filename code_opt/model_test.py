@@ -3,7 +3,7 @@
 
 # system modules
 import os, argparse
-
+from torchvision import transforms
 # basic pytorch modules
 import torch
 import torch.nn as nn
@@ -83,8 +83,8 @@ def main(args):
     ## Dataset Preparation (KTH, UCF, tinyUCF)
     Dataset = {"KTH": KTH_Dataset, "MNIST": MNIST_Dataset}[args.dataset]
 
-    DATA_DIR = os.path.join("../data", 
-        {"MNIST": "mnist", "KTH": "kth"}[args.dataset])
+    DATA_DIR = os.path.join("/ai/open11012/zhou/datasets/", 
+        {"MNIST": "mnist", "KTH": "kth"}[args.dataset],'train')
 
     # batch size for each process
     total_batch_size  = args.batch_size
@@ -122,7 +122,7 @@ def main(args):
         model.eval()
 
         for it, frames in enumerate(test_loader):
-
+            frames = frames[..., np.newaxis]
             frames = frames.permute(0, 1, 4, 2, 3).cuda()
             inputs = frames[:,  :args.input_frames]
             origin = frames[:, -args.future_frames:]
@@ -146,7 +146,18 @@ def main(args):
 
             origin = origin.permute(0, 1, 3, 4, 2).cpu().numpy()
             pred   =   pred.permute(0, 1, 3, 4, 2).cpu().numpy()
-
+            
+            # 输出一副图像
+            aa=origin[0,:,:,:,0]
+            bb=aa[1,:,:]
+            b_max = np.max(bb)
+            b_min = np.min(bb)
+            new_bb = (bb-b_min)/(b_max-b_min)*255
+            new_bb = new_bb.astype('uint8')
+            detected_shadow = transforms.ToPILImage()(new_bb)
+            detected_shadow.save("/ai/open11012/zhou/code/conv-tt-lstm/images/pre2.png")
+            
+            
             for t in range(-args.future_frames, 0):
                 for i in range(batch_size):
                     origin_, pred_ = origin[i, t], pred[i, t]
@@ -191,7 +202,7 @@ if __name__ == "__main__":
         action = 'store_true',  help = 'Use distributed computing in testing.')
     parser.add_argument( '--no-distributed', dest = "distributed", 
         action = 'store_false', help = 'Use single process (GPU) in testing.')
-    parser.set_defaults(distributed = True)
+    parser.set_defaults(distributed = False)
 
     parser.add_argument('--use-apex', dest = 'use_apex', 
         action = 'store_true',  help = 'Use apex.parallel.')
@@ -215,7 +226,7 @@ if __name__ == "__main__":
         help = 'The number of predicted frames of the model.')
 
     # frame format (2, 3, 4)
-    parser.add_argument('--img-channels', default =  3, type = int, 
+    parser.add_argument('--img-channels', default =  1, type = int, 
         help = 'The number of channels in each video frame.')
 
     parser.add_argument('--img-height',   default = 120, type = int, 
@@ -228,7 +239,7 @@ if __name__ == "__main__":
     # model type
     parser.add_argument('--model', default = 'convlstm', type = str,
         help = 'The model is either \"convlstm\"" or \"convttlstm\".')
-    parser.add_argument('--checkpoint', default = "checkpoint.pt", type = str,
+    parser.add_argument('--checkpoint', default = "checkpoint.pth", type = str,
         help = 'The name for the checkpoint.')
 
     # output transformation
@@ -251,10 +262,10 @@ if __name__ == "__main__":
         help = "The kernel size of the convolutional operations.")
 
     ## Dataset (Input)
-    parser.add_argument('--dataset', default = "KTH", type = str,
+    parser.add_argument('--dataset', default = "MNIST", type = str,
         help = 'The dataset name. (Options: KTH, MNIST)')
 
-    parser.add_argument('--test-data-file', default = 'test', type = str, 
+    parser.add_argument('--test-data-file', default = 'mnist_test_seq.npy', type = str, 
         help = 'Name of the folder/file for test set.')
     parser.add_argument('--test-samples', default = 5000, type = int, 
         help = 'Number of samples in test dataset.')
